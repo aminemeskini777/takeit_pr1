@@ -1,0 +1,130 @@
+//GESTION DES TACHES INTERNES
+
+
+1) Etapes fonctionnelles (scenario)
+1.1 Ouvrir la page Gestion des taches internes.
+1.2 Consulter les cartes de statistiques (Total, A faire, En cours, Terminees).
+1.3 Voir la liste des taches (titre, statut, priorite, echeance, responsables).
+1.4 Cliquer sur "Ajouter tache" pour creer une nouvelle tache.
+1.5 Remplir le formulaire: titre, description, date, priorite, statut, responsables, pieces jointes.
+1.6 Valider la creation. La tache apparait dans la liste.
+1.7 Cliquer sur "Modifier" pour mettre a jour une tache existante.
+1.8 Modifier les informations et enregistrer.
+1.9 Cliquer sur "Voir" pour afficher les details et les commentaires.
+1.10 Ajouter un commentaire et envoyer.
+1.11 Cliquer sur "Supprimer" pour supprimer la tache.
+
+2) Explication du code (GestionTaches.jsx)
+Fichier: frontend/src/pages/Manager/GestionTaches.jsx
+
+Lignes 1-17
+Import des hooks React, de l'API Axios, de ManagerPage, des composants shadcn (Button, Card, Input, Label),
+et des icones lucide.
+
+Lignes 19-27
+emptyForm: objet de base du formulaire. Contient les champs utilises pour creer/modifier une tache,
+ainsi que les pieces jointes.
+
+Lignes 29-40
+Definition du composant GestionTaches.
+Initialisation des etats: tasks, employees, loading, message, modals, formData, commentaires.
+
+Lignes 42-46
+normalizeAttachments: fonction utilitaire qui transforme les pieces jointes en objets uniformes
+{ name, url } pour faciliter l'affichage.
+
+Lignes 48-52
+useEffect: lance fetchTasks au montage du composant.
+
+Lignes 54-62
+stats: useMemo calcule total, a faire, en cours, terminees, a partir de tasks.
+
+Lignes 64-75
+fetchTasks: appelle GET /tasks, charge tasks + employees, puis met a jour l'etat.
+Affiche une erreur si l'appel echoue.
+
+Lignes 77-81
+showMessage: affiche un message temporaire (success ou error).
+
+Lignes 83-100
+openModal: ouvre la fenetre creation/modification.
+Si un task est fourni, le formulaire est pre-rempli.
+Sinon, le formulaire est vide.
+
+Lignes 102-109
+openDetails: ouvre la fenetre detail en normalisant les pieces jointes.
+
+Lignes 111-126
+handleInputChange, handleAssigneesChange, handleFilesChange:
+mettent a jour le formulaire selon les actions utilisateur.
+
+Lignes 128-134
+removeExistingAttachment: retire un fichier deja lie a la tache (interface).
+
+Lignes 136-176
+handleSubmit: soumet le formulaire.
+- Cree un FormData pour envoyer les fichiers.
+- Ajoute les champs, les assignees, les fichiers.
+- POST /tasks pour creation, POST /tasks/{id}?_method=PUT pour update.
+- Recharge la liste a la fin.
+
+Lignes 178-194
+handleDelete: supprime une tache via DELETE /tasks/{id} apres confirmation.
+
+Lignes 196-209
+handleAddComment: ajoute un commentaire via POST /tasks/{id}/comments.
+
+Lignes 211-231
+getStatusBadge et getPriorityBadge: classes Tailwind selon le statut et la priorite.
+
+Lignes 233-382
+UI principale:
+- Message d'alerte.
+- Cartes statistiques (icones + valeurs).
+- Tableau des taches avec actions (Voir, Modifier, Supprimer).
+
+Lignes 384-520
+Modal creation/modification:
+- Formulaire complet.
+- Utilise AttachmentsField pour les pieces jointes.
+
+Lignes 522-662
+Modal details:
+- Resume de la tache.
+- Liste des pieces jointes en lien.
+- Liste des commentaires + champ de commentaire.
+
+3) Explication du backend (TaskController.php)
+Fichier: backend/app/Http/Controllers/TaskController.php
+
+index():
+Charge toutes les taches + employes.
+Retourne tasks et employees.
+
+store():
+Valide les champs.
+Upload les fichiers (attachments).
+Cree la tache et assigne les responsables.
+
+update():
+Valide les champs.
+Conserve les anciens fichiers et ajoute les nouveaux.
+Met a jour la tache et les responsables.
+
+destroy():
+Supprime la tache.
+
+addComment():
+Ajoute un commentaire lie a la tache et a l'utilisateur connecte.
+
+4) Endpoints utilises
+GET /api/tasks
+POST /api/tasks
+POST /api/tasks/{id}?_method=PUT
+DELETE /api/tasks/{id}
+POST /api/tasks/{id}/comments
+
+5) Notes techniques
+- Les fichiers sont stockes dans storage/app/public/tasks.
+- Utiliser "php artisan storage:link" pour rendre accessibles les fichiers.
+- Taille max: 100MB (php.ini).

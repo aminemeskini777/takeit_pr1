@@ -1,0 +1,154 @@
+﻿ETAPES DU PROJET (de zero a maintenant)
+======================================
+
+0) Vue d'ensemble
+- Stack: Backend Laravel 12 + Sanctum (API), Frontend React 19 + Vite + Tailwind + shadcn UI.
+- Dossiers racine:
+  - backend/ (API Laravel)
+  - frontend/ (App React)
+  - docs/ (documentation locale)
+
+1) Architecture du projet (structure reelle)
+- Backend:
+  - routes/api.php: routes API protegees + publiques.
+  - app/Http/Controllers: AuthController, UserController, TaskController, DashboardController.
+  - app/Models: User, Equipe, Task, TaskComment.
+  - app/Http/Middleware/RoleMiddleware.php: controle role (manager/employee).
+  - database/migrations: schema DB (users, equipes, tasks, pivot task_user, task_comments).
+  - database/seeders: EquipeSeeder + un manager par defaut.
+  - config/app.php: FRONTEND_URL pour emails d'activation.
+- Frontend:
+  - src/App.jsx: routes React (manager + employee).
+  - src/context/AuthContext.jsx: login/logout + stockage token.
+  - src/api/axios.js: baseURL + Bearer token + gestion 401.
+  - src/pages/Manager/*: pages manager (dashboard, gestion taches, users, etc.).
+  - src/pages/Employee/*: pages employe (placeholder pour le moment).
+  - vite.config.js: proxy /api vers http://127.0.0.1:8000.
+
+2) Etapes techniques pour demarrer from scratch (local)
+2.1 Pre-requis
+- PHP >= 8.2, Composer, Node.js + npm.
+- Base de donnees: par defaut SQLite (voir backend/.env.example). MySQL possible si configure.
+
+2.2 Backend Laravel (dossier backend/)
+- Commandes terminal:
+  1. cd backend
+  2. composer install
+  3. copy .env.example .env
+  4. php artisan key:generate
+  5. (SQLite) creer database/database.sqlite si besoin
+  6. php artisan migrate --seed
+  7. php artisan storage:link   (pour acces aux fichiers uploades)
+
+- Variables env importantes:
+  - FRONTEND_URL=http://localhost:5173   (lien d'activation email)
+  - APP_URL=http://localhost:8000
+  - DB_CONNECTION=sqlite (ou mysql + credentials)
+
+2.3 Frontend React (dossier frontend/)
+- Commandes terminal:
+  1. cd frontend
+  2. npm install
+  3. npm run dev
+
+- Configuration API:
+  - Par defaut le frontend appelle /api et Vite proxy vers http://127.0.0.1:8000.
+  - Optionnel: definir VITE_API_BASE_URL dans un .env du frontend.
+
+2.4 Lancer l'application
+- Backend: php artisan serve  (par defaut http://127.0.0.1:8000)
+- Frontend: npm run dev       (par defaut http://localhost:5173)
+
+3) Authentification (flux)
+- POST /api/auth/login: verifie email+password, retourne token Sanctum + user.
+- Token stocke dans localStorage (frontend) et envoye en Bearer pour les appels suivants.
+- POST /api/auth/logout: supprime le token courant.
+- Middleware role: bloque tout ce qui n'est pas manager dans les routes manager.
+- Activation compte:
+  - Manager cree un utilisateur: mot de passe temporaire + email d'activation.
+  - Lien: FRONTEND_URL/activation?email=...&token=...
+  - POST /api/users/activate: definis un nouveau mot de passe, active le compte.
+
+4) Base de donnees (schema resume)
+- users: name, email, password, role (manager/employee), status (active/inactive), equipe_id, password_tmp.
+- equipes: nom.
+- tasks: title, description, due_date, priority, status, created_by, attachments (json).
+- task_user: pivot many-to-many (task_id, user_id).
+- task_comments: task_id, user_id, content.
+
+5) Seeders (etat actuel)
+- EquipeSeeder: cree 7 equipes par defaut.
+- DatabaseSeeder: cree un manager:
+  - email: amine.meskini@soprahr.com
+  - password: password
+
+6) API REST (routes actuelles)
+Public:
+- POST /api/auth/login
+- POST /api/users/activate
+
+Protegees (auth:sanctum + role:manager):
+- Users:
+  - GET /api/users
+  - POST /api/users
+  - PUT /api/users/{id}
+  - DELETE /api/users/{id}
+  - POST /api/users/{id}/resend-activation
+
+- Tasks:
+  - GET /api/tasks
+  - POST /api/tasks
+  - PUT /api/tasks/{id}
+  - DELETE /api/tasks/{id}
+  - POST /api/tasks/{id}/assign
+  - POST /api/tasks/{id}/comments
+
+- Dashboard:
+  - GET /api/dashboard/stats
+  - GET /api/dashboard/top-employees
+  - GET /api/dashboard/evolution
+  - GET /api/dashboard/employees/{id}
+
+7) Fonctionnalites front (etat actuel)
+7.1 Login / Activation
+- Login.jsx: formulaire login, redirection selon role (manager/employee).
+- Activation.jsx: formulaire d'activation du compte via token temporaire.
+
+7.2 Manager (principal)
+- ManagerDashboard.jsx: stats + top employees + courbe evolution.
+- GestionTaches.jsx: CRUD taches + commentaires + pieces jointes.
+- GestionUtilisateurs.jsx: CRUD users + role + equipe + resend activation.
+- Pages placeholders: VueUnifieeTaches, GestionBadges, ConfigurationJira, Rapports, Equipes.
+
+7.3 Employee (placeholder)
+- EmployeeDashboard.jsx, MesTaches.jsx, MesBadges.jsx, MonProfil.jsx.
+
+8) Gestion des taches internes (resume concret)
+- UI: frontend/src/pages/Manager/GestionTaches.jsx
+- API: backend/app/Http/Controllers/TaskController.php
+- Flux:
+  - Listing: GET /api/tasks
+  - Creation: POST /api/tasks (FormData + attachments)
+  - Update: PUT /api/tasks/{id} (avec existing_attachments)
+  - Delete: DELETE /api/tasks/{id}
+  - Commentaire: POST /api/tasks/{id}/comments
+- Stockage fichiers: backend/storage/app/public/tasks (URL via storage:link).
+
+9) Fichiers clefs a connaitre
+- backend/routes/api.php (routes API)
+- backend/app/Http/Controllers/* (logique API)
+- backend/app/Models/* (relations)
+- backend/database/migrations/* (schema DB)
+- backend/database/seeders/* (donnees initiales)
+- frontend/src/App.jsx (routing)
+- frontend/src/api/axios.js (base API + token)
+- frontend/src/context/AuthContext.jsx (session)
+- frontend/src/pages/Manager/GestionTaches.jsx (coeur feature taches)
+
+10) Notes et points a terminer (etat actuel)
+- Plusieurs pages manager/employe sont des placeholders ("Contenu a venir...").
+- Les APIs employee (taches/badges/profil) ne sont pas encore presentes cote backend.
+- Configuration JIRA et badges non implementees cote backend.
+
+--
+Ce fichier resume l'etat du projet tel qu'il existe dans le code local.
