@@ -39,6 +39,7 @@ function Login() {
       } else {
         navigate("/employee/dashboard");
       }
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       alert("Invalid email or password");
     }

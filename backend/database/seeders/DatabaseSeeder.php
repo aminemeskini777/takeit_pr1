@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
          // Appeler le EquipeSeeder d'abord
         $this->call([
             EquipeSeeder::class,
+            BadgeSeeder::class, 
         ]);
 
         User::factory()->create([

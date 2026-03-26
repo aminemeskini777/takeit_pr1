@@ -25,6 +25,7 @@ export default function Equipes() {
       setLoading(true);
       const res = await api.get("/equipes");
       setEquipes(res.data.equipes || []);
+    // eslint-disable-next-line no-unused-vars
     } catch (e) {
       showMessage("error", "Erreur de chargement des equipes.");
     } finally {
@@ -75,6 +76,7 @@ export default function Equipes() {
       await api.delete(`/equipes/${id}`);
       showMessage("success", "Equipe supprimee.");
       fetchEquipes();
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       showMessage("error", "Erreur lors de la suppression.");
     } finally {

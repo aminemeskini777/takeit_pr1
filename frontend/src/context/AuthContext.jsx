@@ -1,8 +1,10 @@
+/* eslint-disable no-unused-vars */
 import { createContext, useState, useEffect, useContext } from "react";
 import api from "../api/axios";
 
 const AuthContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
@@ -15,6 +17,7 @@ export const AuthProvider = ({ children }) => {
     const savedUser = localStorage.getItem("user");
 
     if (token && savedUser) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUser(JSON.parse(savedUser));
     }
 
@@ -41,11 +44,11 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.post("/auth/logout");
     
-    } catch (e) {}
+    } catch (e) { 
 
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setUser(null);
+    setUser(null);}
   };
   
   return (

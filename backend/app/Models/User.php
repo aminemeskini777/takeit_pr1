@@ -66,4 +66,42 @@ class User extends Authenticatable
         return $this->belongsToMany(Equipe::class, 'equipe_user')
                     ->withTimestamps();
     }
+
+    // Dans app/Models/User.php, ajoutez ces méthodes :
+
+/**
+ * Relation avec les badges obtenus
+ */
+public function badges()
+{
+    return $this->belongsToMany(Badge::class, 'attribution_badges', 'employe_id', 'badge_id')
+                ->withPivot('date_attribution', 'type_attribution', 'commentaire')
+                ->withTimestamps();
+}
+
+/**
+ * Relation avec les attributions de badges
+ */
+public function attributionsBadges()
+{
+    return $this->hasMany(AttributionBadge::class, 'employe_id');
+}
+
+/**
+ * Calculer le nombre de tâches clôturées
+ */
+public function getTachesClotureesCountAttribute()
+{
+    // Compter les tâches internes clôturées
+    $tachesInternes = $this->tachesInternes()
+        ->where('status', 'done')
+        ->count();
+
+    // Compter les tickets JIRA clôturés (à adapter selon votre structure)
+    $ticketsJira = $this->tickets()
+        ->where('status', 'closed')
+        ->count();
+
+    return $tachesInternes + $ticketsJira;
+}
 }

@@ -37,11 +37,11 @@ class UserController extends Controller
                         ->subject('🔐 Activation de votre compte TakeIt');
             });
 
-            Log::info('✅ Email envoyé à ' . $user->email);
+            Log::info(' Email envoyé à ' . $user->email);
             return true;
 
         } catch (\Exception $e) {
-            Log::error('❌ Erreur email: ' . $e->getMessage());
+            Log::error(' Erreur email: ' . $e->getMessage());
             return false;
         }
     }
@@ -109,8 +109,8 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'message' => $emailSent ?
-                '✅ Utilisateur créé. Un email a été envoyé.' :
-                '⚠️ Utilisateur créé mais erreur d\'envoi email.',
+                ' Utilisateur créé. Un email a été envoyé.' :
+                ' Utilisateur créé mais erreur d\'envoi email.',
             'user' => $user->load('equipe')
         ], 201);
     }
@@ -165,7 +165,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => '✅ Utilisateur modifié avec succès',
+            'message' => ' Utilisateur modifié avec succès',
             'user' => $user->load('equipe')
         ]);
     }
@@ -195,7 +195,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => '✅ Utilisateur supprimé avec succès'
+            'message' => ' Utilisateur supprimé avec succès'
         ]);
     }
 
@@ -234,11 +234,11 @@ class UserController extends Controller
             'email_verified_at' => now()
         ]);
 
-        Log::info('✅ Compte activé avec succès: ' . $user->email);
+        Log::info(' Compte activé avec succès: ' . $user->email);
 
         return response()->json([
             'success' => true,
-            'message' => '✅ Compte activé. Vous pouvez maintenant vous connecter.'
+            'message' => ' Compte activé. Vous pouvez maintenant vous connecter.'
         ]);
     }
 
@@ -273,10 +273,10 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'message' => $emailSent ?
-                '✅ Email d\'activation réenvoyé avec succès' :
-                '❌ Erreur lors de l\'envoi de l\'email'
+                ' Email d\'activation réenvoyé avec succès' :
+                ' Erreur lors de l\'envoi de l\'email'
         ]);
     }
 
-   
+
 }
